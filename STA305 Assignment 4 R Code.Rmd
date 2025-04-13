@@ -1,0 +1,141 @@
+---
+title: "R Code"
+author: "Ebrahim Mohamud"
+date: "2025-04-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Part 1
+```{r, echo=FALSE}
+##############################################
+# 1. LOAD DATA
+##############################################
+data <- data.frame(
+  Run = 1:8,
+  A   = c(-1, -1, -1, -1, +1, +1, +1, +1),
+  B   = c(-1, -1, +1, +1, -1, -1, +1, +1),
+  C   = c(-1, +1, -1, +1, -1, +1, -1, +1),
+  AB  = c(+1, +1, -1, -1, -1, -1, +1, +1),
+  AC  = c(+1, -1, +1, -1, -1, +1, -1, +1),
+  BC  = c(+1, -1, -1, +1, +1, -1, -1, +1),
+  ABC = c(-1, +1, +1, -1, +1, -1, -1, +1), 
+  Rep1 = c(507.48, 498.24, 423.83, 422.90, 472.65, 462.68, 396.21, 376.38), 
+  Rep2 = c(504.31, 502.62, 424.98, 418.84, 477.71, 463.17, 385.43, 382.19),
+  Var = c(5.02, 9.59, 0.66, 8.24, 12.80, 0.12, 57.96, 16.93)
+)
+
+knitr::kable(data[1:3, ], caption = "Factorial Combinations")
+```
+
+# Part 2
+```{r, echo=FALSE}
+##############################################
+# 2. CALCULATE MAIN EFFECTS (NUMERICALLY)
+##############################################
+# For Rep1:    
+# Main effect of A: difference between the mean responses when A=1 and A=-1.
+mean_A_pos_Rep1 <- mean(data$Rep1[data$A == 1])
+mean_A_neg_Rep1 <- mean(data$Rep1[data$A == -1])
+effect_A_Rep1   <- mean_A_pos_Rep1 - mean_A_neg_Rep1
+
+# Main effect of B:
+mean_B_pos_Rep1 <- mean(data$Rep1[data$B == 1])
+mean_B_neg_Rep1 <- mean(data$Rep1[data$B == -1])
+effect_B_Rep1   <- mean_B_pos_Rep1 - mean_B_neg_Rep1
+
+# Main effect of C:
+mean_C_pos_Rep1 <- mean(data$Rep1[data$C == 1])
+mean_C_neg_Rep1 <- mean(data$Rep1[data$C == -1])
+effect_C_Rep1   <- mean_C_pos_Rep1 - mean_C_neg_Rep1
+
+# For Rep2:
+mean_A_pos_Rep2 <- mean(data$Rep2[data$A == 1])
+mean_A_neg_Rep2 <- mean(data$Rep2[data$A == -1])
+effect_A_Rep2   <- mean_A_pos_Rep2 - mean_A_neg_Rep2
+
+mean_B_pos_Rep2 <- mean(data$Rep2[data$B == 1])
+mean_B_neg_Rep2 <- mean(data$Rep2[data$B == -1])
+effect_B_Rep2   <- mean_B_pos_Rep2 - mean_B_neg_Rep2
+
+mean_C_pos_Rep2 <- mean(data$Rep2[data$C == 1])
+mean_C_neg_Rep2 <- mean(data$Rep2[data$C == -1])
+effect_C_Rep2   <- mean_C_pos_Rep2 - mean_C_neg_Rep2
+
+# Create a summary table of main effects
+main_effects_rep1 <- data.frame(
+  Factor = c("A", "B", "C"),
+  Mean_Positive = c(mean_A_pos_Rep1, mean_B_pos_Rep1, mean_C_pos_Rep1),
+  Mean_Negative = c(mean_A_neg_Rep1, mean_B_neg_Rep1, mean_C_neg_Rep1),
+  Main_Effect = c(effect_A_Rep1, effect_B_Rep1, effect_C_Rep1)
+)
+
+main_effects_rep2 <- data.frame(
+  Factor = c("A", "B", "C"),
+  Mean_Positive = c(mean_A_pos_Rep2, mean_B_pos_Rep2, mean_C_pos_Rep2),
+  Mean_Negative = c(mean_A_neg_Rep2, mean_B_neg_Rep2, mean_C_neg_Rep2),
+  Main_Effect = c(effect_A_Rep2, effect_B_Rep2, effect_C_Rep2)
+)
+
+knitr::kable(main_effects_rep1, caption = "Replication 1")
+knitr::kable(main_effects_rep2, caption = "Replication 2")
+```
+
+# Part 3
+```{r, echo=FALSE, fig.width=10, fig.height=4}
+##############################################
+# 2. INSPECT DATA AND COMPUTE RESPONSE
+##############################################
+# Compute the mean response (y) from the two replicates for each run
+data$y <- rowMeans(data[, c("Rep1", "Rep2")])
+
+##############################################
+# 4. INTERACTION PLOTS
+##############################################
+par(mfrow = c(1, 3))
+# Interaction plot for Factors A and B
+interaction.plot(x.factor = factor(data$A), 
+                 trace.factor = factor(data$B),
+                 response = data$y,
+                 main = "Interaction Plot: Factor A and Factor B",
+                 xlab = "Factor A (coded -1/+1)",
+                 ylab = "Mean Response (y)",
+                 trace.label = "Factor B")
+
+# Interaction plot for Factors A and C
+interaction.plot(x.factor = factor(data$A), 
+                 trace.factor = factor(data$C),
+                 response = data$y,
+                 main = "Interaction Plot: Factor A and Factor C",
+                 xlab = "Factor A (coded -1/+1)",
+                 ylab = "Mean Response (y)",
+                 trace.label = "Factor C")
+
+# Interaction plot for Factors B and C
+interaction.plot(x.factor = factor(data$B), 
+                 trace.factor = factor(data$C),
+                 response = data$y,
+                 main = "Interaction Plot: Factor B and Factor C",
+                 xlab = "Factor B (coded -1/+1)",
+                 ylab = "Mean Response (y)",
+                 trace.label = "Factor C")
+par(mfrow = c(1, 1))
+```
+
+# Part 4
+```{r, echo=FALSE}
+# Pooled Estimated Variance: 
+Var = 5.02 + 9.59 + 0.66 + 8.24 + 12.80 + 0.12 + 57.96 + 16.93
+```
+
+
+
+
+
+
+
+
+
